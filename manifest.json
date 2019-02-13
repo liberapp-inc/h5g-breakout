@@ -9,15 +9,16 @@
 	],
 	"game": [
 		"bin-debug/GameObject.js",
-		"bin-debug/Background.js",
+		"bin-debug/GameOver.js",
 		"bin-debug/Box.js",
 		"bin-debug/BoxWave.js",
 		"bin-debug/Game.js",
+		"bin-debug/Background.js",
 		"bin-debug/Ball.js",
-		"bin-debug/GameOver.js",
 		"bin-debug/Item.js",
 		"bin-debug/Main.js",
 		"bin-debug/Paddle.js",
-		"bin-debug/Score.js"
+		"bin-debug/Score.js",
+		"bin-debug/Util/vec2.js"
 	]
 }

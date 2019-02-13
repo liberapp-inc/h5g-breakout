@@ -23,7 +23,7 @@ var Item = (function (_super) {
         return _this;
     }
     Item.prototype.update = function () {
-        this.shape.y += Ball.I.speed;
+        this.shape.y += Game.height / (60 * 4); // 4sec
         // collision
         var dx = Paddle.I.shape.x - this.shape.x;
         var dy = Paddle.I.shape.y - this.shape.y;

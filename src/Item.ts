@@ -17,7 +17,7 @@ class Item extends GameObject{
     }
     
     update() {
-        this.shape.y += Ball.I.speed;
+        this.shape.y += Game.height / (60 * 4); // 4sec
 
         // collision
         let dx = Paddle.I.shape.x - this.shape.x;

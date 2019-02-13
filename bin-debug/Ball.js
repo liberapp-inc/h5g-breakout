@@ -10,11 +10,13 @@ r.prototype = e.prototype, t.prototype = new r();
 };
 var Ball = (function (_super) {
     __extends(Ball, _super);
-    function Ball() {
+    function Ball(x, y) {
         var _this = _super.call(this) || this;
         Ball.balls.push(_this);
         _this.radius = BALL_SIZE_PER_WIDTH * Game.width;
-        _this.setShape(Game.width * 0.5, Game.height * 0.7, _this.radius);
+        _this.setShape(x, y, _this.radius);
+        _this.vx = _this.radius * +0.5 * (Game.randomInt(0, 1) * 2 - 1);
+        _this.vy = _this.radius * -0.5;
         return _this;
     }
     Ball.prototype.onDestroy = function () {
@@ -33,8 +35,25 @@ var Ball = (function (_super) {
         this.shape.y = y;
     };
     Ball.prototype.update = function () {
-        // check hit boxes
-        // check fall out
+        // move
+        this.shape.x += this.vx;
+        this.shape.y += this.vy;
+        // hit boxes
+        // bound on wall
+        if (Math.pow((this.shape.x - Game.width * 0.5), 2) > Math.pow((Game.width * 0.5 - this.radius), 2)) {
+            this.vx *= -1;
+            this.shape.x += this.vx;
+        }
+        if (this.shape.y < this.radius) {
+            this.vy *= -1;
+            this.shape.y += this.vy;
+        }
+        // fall out
+        if (this.shape.y > Game.height) {
+            this.destroy();
+        }
+    };
+    Ball.prototype.reflect = function () {
     };
     Ball.balls = [];
     return Ball;

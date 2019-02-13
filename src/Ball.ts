@@ -3,16 +3,18 @@ class Ball extends GameObject{
 
     static balls:Ball[] = [];
 
+    radius:number;
     vx:number;
     vy:number;
-    radius:number;
 
-    constructor() {
+    constructor( x:number, y:number) {
         super();
 
         Ball.balls.push(this);
         this.radius = BALL_SIZE_PER_WIDTH * Game.width;
-        this.setShape(Game.width *0.5, Game.height *0.7, this.radius);
+        this.setShape(x, y, this.radius);
+        this.vx = this.radius * +0.5 * (Game.randomInt(0,1) * 2 - 1);
+        this.vy = this.radius * -0.5;
     }
 
     onDestroy(){
@@ -33,8 +35,29 @@ class Ball extends GameObject{
     }
     
     update() {
-        // check hit boxes
+        // move
+        this.shape.x += this.vx;
+        this.shape.y += this.vy;
 
-        // check fall out
+        // hit boxes
+
+        // bound on wall
+        if( (this.shape.x - Game.width*0.5) ** 2 > (Game.width*0.5 - this.radius)**2 ) {
+            this.vx *= -1;
+            this.shape.x += this.vx;
+        }
+        if( this.shape.y < this.radius ) {
+            this.vy *= -1;
+            this.shape.y += this.vy;
+        }
+        // fall out
+        if( this.shape.y > Game.height ) { // + this.radius ) {
+            this.destroy();
+        }
+    }
+
+    reflect(){
+        
+
     }
 }
