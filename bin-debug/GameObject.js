@@ -13,7 +13,7 @@ var GameObject = (function () {
         GameObject.objects.push(this);
     }
     GameObject.prototype.destroy = function () { this.deleteFlag = true; };
-    GameObject.prototype.onDestroy = function () { }; // virtual method
+    GameObject.prototype.onDestroy = function () { };
     GameObject.initial = function (displayObjectContainer) {
         GameObject.objects = [];
         GameObject.display = displayObjectContainer;
@@ -32,9 +32,7 @@ var GameObject = (function () {
         }
     };
     GameObject.dispose = function () {
-        GameObject.objects.forEach(function (obj) { obj.destroy(); obj.delete(); });
-        GameObject.objects = GameObject.objects.filter(function (obj) { return false; });
-        GameObject.objects = [];
+        GameObject.objects = GameObject.objects.filter(function (obj) { obj.destroy(); obj.delete(); return false; });
     };
     GameObject.prototype.delete = function () {
         this.onDestroy();

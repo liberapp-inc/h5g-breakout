@@ -10,7 +10,8 @@ class Main extends eui.UILayer {
  
     private addToStage() {
         GameObject.initial( this.stage );
-        Game.init( this );
+        Util.init( this );
+        Game.loadSceneGamePlay();
         // this.addEventListener(egret.Event.ENTER_FRAME,GameObject.process,this);
         egret.startTick(this.tickLoop, this);
     }

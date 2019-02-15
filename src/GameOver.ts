@@ -7,10 +7,10 @@ class GameOver extends GameObject{
     constructor() {
         super();
 
-        this.textGameOver = Game.newTextField("GAME OVER", Game.width / 10, 0xffff00, 0.5, 0.45, true);
+        this.textGameOver = Util.newTextField("GAME OVER", Util.width / 10, 0xffff00, 0.5, 0.45, true);
         GameObject.display.addChild( this.textGameOver );
         
-        this.textScore = Game.newTextField("SCORE : " + Score.point.toFixed(), Game.width / 12, 0xffff00, 0.5, 0.55, true);
+        this.textScore = Util.newTextField("SCORE : " + Score.point.toFixed(), Util.width / 12, 0xffff00, 0.5, 0.55, true);
         GameObject.display.addChild( this.textScore );
 
         GameObject.display.once(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => this.tap(e), this);

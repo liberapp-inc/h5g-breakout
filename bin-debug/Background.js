@@ -14,7 +14,7 @@ var Background = (function (_super) {
         var _this = _super.call(this) || this;
         _this.shape = new egret.Shape();
         _this.shape.graphics.beginFill(0x00c0e0);
-        _this.shape.graphics.drawRect(0, 0, Game.width, Game.height);
+        _this.shape.graphics.drawRect(0, 0, Util.width, Util.height);
         _this.shape.graphics.endFill();
         GameObject.display.addChild(_this.shape);
         return _this;

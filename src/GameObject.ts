@@ -16,7 +16,7 @@ abstract class GameObject {
     abstract update() : void;
 
     destroy() { this.deleteFlag = true; }
-    onDestroy(){}   // virtual method
+    onDestroy(){}
 
     // system
     private static objects: GameObject[];
@@ -40,9 +40,7 @@ abstract class GameObject {
         }
     }
     static dispose(){
-        GameObject.objects.forEach( obj => { obj.destroy(); obj.delete(); } );
-        GameObject.objects = GameObject.objects.filter( obj => false );
-        GameObject.objects = [];
+        GameObject.objects = GameObject.objects.filter( obj => { obj.destroy(); obj.delete(); return false } );
     }
 
     protected deleteFlag;

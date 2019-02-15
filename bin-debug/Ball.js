@@ -10,13 +10,13 @@ r.prototype = e.prototype, t.prototype = new r();
 };
 var Ball = (function (_super) {
     __extends(Ball, _super);
-    function Ball(x, y) {
+    function Ball(x, y, vx, vy) {
         var _this = _super.call(this) || this;
         Ball.balls.push(_this);
-        _this.radius = BALL_SIZE_PER_WIDTH * Game.width;
+        _this.radius = BALL_SIZE_PER_WIDTH * Util.width * 0.5;
         _this.setShape(x, y, _this.radius);
-        _this.vx = _this.radius * +0.5 * (Game.randomInt(0, 1) * 2 - 1);
-        _this.vy = _this.radius * -0.5;
+        _this.vx = vx;
+        _this.vy = vy;
         return _this;
     }
     Ball.prototype.onDestroy = function () {
@@ -35,21 +35,57 @@ var Ball = (function (_super) {
         this.shape.y = y;
     };
     Ball.prototype.update = function () {
-        // move
+        var _this = this;
+        // 移動処理
         this.shape.x += this.vx;
         this.shape.y += this.vy;
-        // hit boxes
-        // bound on wall
-        if (Math.pow((this.shape.x - Game.width * 0.5), 2) > Math.pow((Game.width * 0.5 - this.radius), 2)) {
+        // BOXとの接触判定（一番近いもの）
+        var nearest = null;
+        var nd2 = 0;
+        Box.boxes.forEach(function (box) {
+            var dx = box.shape.x - _this.shape.x;
+            var dy = box.shape.y - _this.shape.y;
+            var dx2 = Math.pow(dx, 2);
+            var dy2 = Math.pow(dy, 2);
+            if (!nearest) {
+                var xr = box.sizeW * 0.5 + _this.radius;
+                var yr = box.sizeH * 0.5 + _this.radius;
+                if (dx2 < Math.pow(xr, 2) && dy2 < Math.pow(yr, 2)) {
+                    nearest = box;
+                    nd2 = dx2 + dy2;
+                }
+            }
+            else {
+                if (nd2 > dx2 + dy2) {
+                    nearest = box;
+                    nd2 = dx2 + dy2;
+                }
+            }
+        });
+        if (nearest) {
+            var dx = nearest.shape.x - this.shape.x;
+            var dy = nearest.shape.y - this.shape.y;
+            if (Math.abs(dy / dx) >= Box.sizeRateH) {
+                this.vy *= -1;
+            }
+            else {
+                this.vx *= -1;
+            }
+            // ダメージ〜破壊
+            nearest.applyDamage(1);
+        }
+        // 壁で跳ね返り
+        if (Math.pow((this.shape.x - Util.width * 0.5), 2) > Math.pow((Util.width * 0.5 - this.radius), 2)) {
             this.vx *= -1;
             this.shape.x += this.vx;
         }
-        if (this.shape.y < this.radius) {
+        if (this.vy < 0 && this.shape.y < this.radius) {
             this.vy *= -1;
             this.shape.y += this.vy;
         }
-        // fall out
-        if (this.shape.y > Game.height) {
+        // 下に落ちたら消える
+        if (this.shape.y > Util.height) {
+            Paddle.I.ballCount--;
             this.destroy();
         }
     };

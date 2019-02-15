@@ -3,29 +3,25 @@ class Paddle extends GameObject{
 
     static I:Paddle = null;   // singleton instance
 
-    readonly sizeRateY = (1/3);
-    readonly size:number;
+    static readonly sizeRateH = (1/3);
+    readonly sizeW:number;
+    readonly sizeH:number;
     touchOffsetX:number = 0;
+
+    ballCount:number = 3;
+    itemType:ItemType = ItemType.None;
+    itemSpan:number = 0;
+    state:()=>void = this.stateWave;
 
     constructor() {
         super();
 
         Paddle.I = this;
-        this.size = PADDLE_SIZE_PER_WIDTH * Game.width;
-        this.setShape(Game.width *0.5, Game.height *0.9 );
+        this.sizeW = PADDLE_SIZE_PER_WIDTH * Util.width;
+        this.sizeH = this.sizeW * Paddle.sizeRateH;
+        this.setShape(Util.width *0.5, Util.height *0.9 );
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => this.touchBegin(e), this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, (e: egret.TouchEvent) => this.touchMove(e), this);
-    }
-    setShape( x:number, y:number ){
-        if( this.shape )
-            GameObject.display.removeChild(this.shape);
-        this.shape = new egret.Shape();
-        this.shape.graphics.beginFill(0xff1040);
-        this.shape.graphics.drawRect(-0.5*this.size, -0.5*this.size*this.sizeRateY, this.size, this.size * this.sizeRateY);
-        this.shape.graphics.endFill();
-        GameObject.display.addChild(this.shape);
-        this.shape.x = x;
-        this.shape.y = y;
     }
 
     onDestroy(){
@@ -34,28 +30,56 @@ class Paddle extends GameObject{
         Paddle.I = null;
     }
 
-    
+    setShape( x:number, y:number ){
+        if( this.shape )
+            GameObject.display.removeChild(this.shape);
+        this.shape = new egret.Shape();
+        this.shape.graphics.beginFill(0xe00030);
+        this.shape.graphics.drawRect(-0.5*this.sizeW, -0.5*this.sizeH, this.sizeW, this.sizeH);
+        this.shape.graphics.endFill();
+        GameObject.display.addChild(this.shape);
+        this.shape.x = x;
+        this.shape.y = y;
+    }
+
     update() {
-        // check to hit balls
+        this.state();
+    }
+
+    stateWave(){
+        Box.boxes.forEach( box => {
+            box.shape.y += BOX_SIZE_PER_WIDTH * Util.width * Box.sizeRateH;
+        });
+
+        let sizeW = BOX_SIZE_PER_WIDTH * Util.width;
+        let sizeH = sizeW * Box.sizeRateH;
+        for( let i=1 ; i<BOXES_IN_WIDTH ; i++ )
+            new Box( sizeW * i, sizeH * 1, Util.randomInt(1,Box.maxHp) );
+
+        this.state = this.stateShoot;
+    }
+
+    stateShoot(){
+
+    }
+
+    stateCatch(){
+        // ボールとの接触判定
         Ball.balls.forEach( ball => {
             if( ball.vy > 0 ){
-                // boundary
                 let dx = ball.shape.x - this.shape.x;
                 let dy = ball.shape.y - this.shape.y;
-                let xr = ball.radius + this.size*0.5;
-                let yr = ball.radius + this.size*this.sizeRateY*0.5;
+                let xr = ball.radius + this.sizeW*0.5;
+                let yr = ball.radius + this.sizeH*0.5;
 
                 if( dx*dx < xr*xr && dy*dy < yr*yr ){
-                    if( -dy/Math.abs(dx) >= this.sizeRateY ) {
-                        ball.vy *= -1;
-                        ball.shape.y += ball.vy;
-                    }else{
-                        ball.vx *= -1;
-                        ball.shape.x += ball.vx;
-                    }
+                    ball.destroy();
                 }
             }
         });
+
+        if( Ball.balls.length == 0 )
+            this.state = this.stateWave;
     }
 
     touchBegin(e:egret.TouchEvent){
@@ -63,17 +87,33 @@ class Paddle extends GameObject{
             return;
         this.touchOffsetX = this.shape.x - e.localX;
 
-        new Ball( this.shape.x, this.shape.y - this.size*0.5*this.sizeRateY - (BALL_SIZE_PER_WIDTH*Game.width*0.5) );
+        if( this.state == this.stateShoot ){
+            let x = this.shape.x;
+            let y = this.shape.y - this.sizeH*0.5 - (BALL_SIZE_PER_WIDTH*Util.width*0.5);
+            let vx = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * 0.5;
+            let vy = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * -0.5;
+
+            for( let i=0 ; i<this.ballCount ; i++ ) {
+                let rate = 1 + i * 0.2;
+                new Ball( x, y, vx * rate, vy * rate );
+            }
+            this.state = this.stateCatch;
+        }
     }
+
     touchMove(e:egret.TouchEvent){
         if( this.deleteFlag )
             return;
         this.shape.x = e.localX + this.touchOffsetX;
-        this.shape.x = Game.clamp( this.shape.x, this.size*0.5, Game.width - this.size*0.5 );
+        this.shape.x = Util.clamp( this.shape.x, this.sizeW*0.5, Util.width - this.sizeW*0.5 );
         this.touchOffsetX = this.shape.x - e.localX;
     }
 
-    pickItem(item:number){
-
+    pickItem(item:ItemType){
+        switch( item ){
+            case ItemType.Ball:
+            this.ballCount++;
+            break;
+        }
     }
 }
