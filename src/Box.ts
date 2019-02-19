@@ -2,8 +2,8 @@
 class Box extends GameObject{
 
     static boxes:Box[] = [];
-    static readonly sizeRateH = (1/2);
-    static readonly maxHp:number = 2;
+    static readonly sizeRateH = 0.75; // (1/2);
+    static readonly maxHp:number = 10;
 
     readonly sizeW:number;
     readonly sizeH:number;
@@ -36,8 +36,9 @@ class Box extends GameObject{
         this.shape.y = y;
     }
     static getColor( hp:number ): number{
-        let rate = Util.clamp((hp-1) / (Box.maxHp-1), 0, 1) * 0.8 + 0.2;
-        return Util.color( 0.9 * rate, 0, 0.2 * rate );
+        let rate = Util.clamp((hp-1) / (Box.maxHp-1), 0, 1);
+        //return Util.color( 0.9 * rate, 0, 0.2 * rate );
+        return Util.colorLerp( 0xf0d000, 0x800000, rate );
     }
     
     update() {
@@ -51,6 +52,7 @@ class Box extends GameObject{
             if( Util.randomInt( 0, 3 ) == 0 ){
                 new Item( this.shape.x, this.shape.y, ItemType.Ball );
             }
+            Score.I.breakBox();
             this.destroy();
         }
     }

@@ -21,7 +21,8 @@ var Item = (function (_super) {
     __extends(Item, _super);
     function Item(x, y, type) {
         var _this = _super.call(this) || this;
-        _this.radius = Util.width * BALL_SIZE_PER_WIDTH * 0.5;
+        Item.count++;
+        _this.radius = Util.width * BALL_SIZE_PER_WIDTH * 0.5 * 0.7;
         _this.type = type;
         _this.shape = new egret.Shape();
         _this.shape.graphics.beginFill(0xffc000);
@@ -32,6 +33,9 @@ var Item = (function (_super) {
         _this.shape.y = y;
         return _this;
     }
+    Item.prototype.onDestroy = function () {
+        Item.count--;
+    };
     Item.prototype.update = function () {
         this.shape.y += Util.height / (60 * 4); // 4sec
         // collision
@@ -46,6 +50,7 @@ var Item = (function (_super) {
         if (this.shape.y >= Util.height)
             this.destroy();
     };
+    Item.count = 0;
     return Item;
 }(GameObject));
 __reflect(Item.prototype, "Item");

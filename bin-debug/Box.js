@@ -36,8 +36,9 @@ var Box = (function (_super) {
         this.shape.y = y;
     };
     Box.getColor = function (hp) {
-        var rate = Util.clamp((hp - 1) / (Box.maxHp - 1), 0, 1) * 0.8 + 0.2;
-        return Util.color(0.9 * rate, 0, 0.2 * rate);
+        var rate = Util.clamp((hp - 1) / (Box.maxHp - 1), 0, 1);
+        //return Util.color( 0.9 * rate, 0, 0.2 * rate );
+        return Util.colorLerp(0xf0d000, 0x800000, rate);
     };
     Box.prototype.update = function () {
     };
@@ -51,12 +52,13 @@ var Box = (function (_super) {
             if (Util.randomInt(0, 3) == 0) {
                 new Item(this.shape.x, this.shape.y, ItemType.Ball);
             }
+            Score.I.breakBox();
             this.destroy();
         }
     };
     Box.boxes = [];
-    Box.sizeRateH = (1 / 2);
-    Box.maxHp = 2;
+    Box.sizeRateH = 0.75; // (1/2);
+    Box.maxHp = 10;
     return Box;
 }(GameObject));
 __reflect(Box.prototype, "Box");

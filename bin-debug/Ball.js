@@ -77,6 +77,7 @@ var Ball = (function (_super) {
         // 壁で跳ね返り
         if (Math.pow((this.shape.x - Util.width * 0.5), 2) > Math.pow((Util.width * 0.5 - this.radius), 2)) {
             this.vx *= -1;
+            this.vy += this.radius * 0.05; //やや落下させて無限ループ防止
             this.shape.x += this.vx;
         }
         if (this.vy < 0 && this.shape.y < this.radius) {

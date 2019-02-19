@@ -13,7 +13,10 @@ var Paddle = (function (_super) {
     function Paddle() {
         var _this = _super.call(this) || this;
         _this.touchOffsetX = 0;
+        _this.touch = false;
+        _this.padAim = null;
         _this.ballCount = 3;
+        _this.rowCount = 0;
         _this.itemType = ItemType.None;
         _this.itemSpan = 0;
         _this.state = _this.stateWave;
@@ -23,19 +26,21 @@ var Paddle = (function (_super) {
         _this.setShape(Util.width * 0.5, Util.height * 0.9);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, function (e) { return _this.touchBegin(e); }, _this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, function (e) { return _this.touchMove(e); }, _this);
+        GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_END, function (e) { return _this.touchEnd(e); }, _this);
         return _this;
     }
     Paddle.prototype.onDestroy = function () {
         var _this = this;
         GameObject.display.stage.removeEventListener(egret.TouchEvent.TOUCH_BEGIN, function (e) { return _this.touchBegin(e); }, this);
         GameObject.display.stage.removeEventListener(egret.TouchEvent.TOUCH_MOVE, function (e) { return _this.touchMove(e); }, this);
+        GameObject.display.stage.removeEventListener(egret.TouchEvent.TOUCH_END, function (e) { return _this.touchEnd(e); }, this);
         Paddle.I = null;
     };
     Paddle.prototype.setShape = function (x, y) {
         if (this.shape)
             GameObject.display.removeChild(this.shape);
         this.shape = new egret.Shape();
-        this.shape.graphics.beginFill(0xe00030);
+        this.shape.graphics.beginFill(0x703000);
         this.shape.graphics.drawRect(-0.5 * this.sizeW, -0.5 * this.sizeH, this.sizeW, this.sizeH);
         this.shape.graphics.endFill();
         GameObject.display.addChild(this.shape);
@@ -46,16 +51,49 @@ var Paddle = (function (_super) {
         this.state();
     };
     Paddle.prototype.stateWave = function () {
+        var _this = this;
+        var isGameOver = false;
+        Score.I.combo = 0;
+        // scroll down all remaining boxes
         Box.boxes.forEach(function (box) {
             box.shape.y += BOX_SIZE_PER_WIDTH * Util.width * Box.sizeRateH;
+            if (box.shape.y > _this.shape.y)
+                isGameOver = true;
         });
+        // Generate a new box row
+        this.rowCount++;
         var sizeW = BOX_SIZE_PER_WIDTH * Util.width;
         var sizeH = sizeW * Box.sizeRateH;
-        for (var i = 1; i < BOXES_IN_WIDTH; i++)
-            new Box(sizeW * i, sizeH * 1, Util.randomInt(1, Box.maxHp));
-        this.state = this.stateShoot;
+        for (var i = 1; i < BOXES_IN_WIDTH; i++) {
+            var hp = Util.randomInt(-1, Util.clamp(this.rowCount + 1, 1, Box.maxHp));
+            if (hp > 0)
+                new Box(sizeW * i, sizeH * 1, hp);
+        }
+        // Is game over?
+        if (isGameOver || this.ballCount == 0) {
+            this.state = this.stateAiming;
+            new GameOver();
+        }
+        else {
+            this.state = this.stateAiming;
+            this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5));
+        }
     };
-    Paddle.prototype.stateShoot = function () {
+    Paddle.prototype.stateAiming = function () {
+    };
+    Paddle.prototype.shoot = function (dir) {
+        this.aimDir = dir;
+        var vx = -Math.sin(dir);
+        var vy = -Math.cos(dir);
+        this.padAim = null;
+        this.state = this.stateCatch;
+        var x = this.shape.x;
+        var y = this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5);
+        var baseSpeed = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * 0.5;
+        for (var i = 0; i < this.ballCount; i++) {
+            var speed = baseSpeed * (1 + i * 0.2);
+            new Ball(x, y, vx * speed, vy * speed);
+        }
     };
     Paddle.prototype.stateCatch = function () {
         var _this = this;
@@ -71,31 +109,27 @@ var Paddle = (function (_super) {
                 }
             }
         });
-        if (Ball.balls.length == 0)
+        if (Ball.balls.length == 0 && Item.count == 0 && this.touch == false) {
             this.state = this.stateWave;
-    };
-    Paddle.prototype.touchBegin = function (e) {
-        if (this.deleteFlag)
-            return;
-        this.touchOffsetX = this.shape.x - e.localX;
-        if (this.state == this.stateShoot) {
-            var x = this.shape.x;
-            var y = this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5);
-            var vx = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * 0.5;
-            var vy = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * -0.5;
-            for (var i = 0; i < this.ballCount; i++) {
-                var rate = 1 + i * 0.2;
-                new Ball(x, y, vx * rate, vy * rate);
-            }
-            this.state = this.stateCatch;
         }
     };
+    Paddle.prototype.touchBegin = function (e) {
+        if (this.deleteFlag || this.state != this.stateCatch)
+            return;
+        this.touchOffsetX = this.shape.x - e.localX;
+        this.touch = true;
+    };
     Paddle.prototype.touchMove = function (e) {
-        if (this.deleteFlag)
+        if (this.deleteFlag || this.state != this.stateCatch)
             return;
         this.shape.x = e.localX + this.touchOffsetX;
         this.shape.x = Util.clamp(this.shape.x, this.sizeW * 0.5, Util.width - this.sizeW * 0.5);
         this.touchOffsetX = this.shape.x - e.localX;
+    };
+    Paddle.prototype.touchEnd = function (e) {
+        if (this.deleteFlag || this.state != this.stateCatch)
+            return;
+        this.touch = false;
     };
     Paddle.prototype.pickItem = function (item) {
         switch (item) {

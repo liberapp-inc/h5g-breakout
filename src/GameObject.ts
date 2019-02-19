@@ -1,9 +1,9 @@
 // UnityのGameObjectライクなタスク管理クラス
 //  update()に毎フレームの処理を書く
-//  destroy()でオブジェクトを破棄する
+//  オブジェクトを破棄するときはdestroy()を呼ぶ
 //  破棄のときに後処理が必要なら、onDestroy()に記述
 //  生成時の初期化はUnityと違い、constructor()を使う（引数を渡せる）
-//  シーンを切り替えたい場合は transitにシーンロード関数を設定する（全オブジェクトを破棄してからtransitを実行）
+//  シーンを切り替えたい場合は transitにシーンロード関数を設定（全オブジェクトを破棄してからtransitを実行）
 
 abstract class GameObject {
     
@@ -19,12 +19,11 @@ abstract class GameObject {
     onDestroy(){}
 
     // system
-    private static objects: GameObject[];
+    private static objects: GameObject[] = [];
     public static display: egret.DisplayObjectContainer;
     public static transit:()=>void;
 
     static initial(displayObjectContainer: egret.DisplayObjectContainer){
-        GameObject.objects = [];
         GameObject.display = displayObjectContainer;
     }
     static process(){

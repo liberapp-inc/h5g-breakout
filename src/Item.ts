@@ -11,13 +11,16 @@ enum ItemType {
 
 class Item extends GameObject{
 
+    static count:number = 0;
+
     radius:number;
     type:ItemType;
 
     constructor( x:number, y:number, type:ItemType ) {
         super();
 
-        this.radius = Util.width * BALL_SIZE_PER_WIDTH * 0.5;
+        Item.count++;
+        this.radius = Util.width * BALL_SIZE_PER_WIDTH * 0.5 * 0.7;
         this.type = type;
         this.shape = new egret.Shape();
         this.shape.graphics.beginFill(0xffc000);
@@ -26,6 +29,10 @@ class Item extends GameObject{
         GameObject.display.addChild(this.shape);
         this.shape.x = x;
         this.shape.y = y;
+    }
+    
+    onDestroy(){
+        Item.count--;
     }
     
     update() {

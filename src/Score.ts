@@ -1,13 +1,17 @@
 
 class Score extends GameObject{
 
-    static point:number;
+    static I:Score = null;   // singleton instance
+
+    point:number = 0;
+    combo:number = 0;   // １ターンで壊したBOX数だけコンボになる（高得点）
     text:egret.TextField = null;
 
     constructor() {
         super();
 
-        Score.point = 0;
+        Score.I = this;
+        this.point = 0;
         this.text = Util.newTextField("SCORE : 0", Util.width / 18, 0xffff00, 0.5, 0.0, true);
         GameObject.display.addChild( this.text );
     }
@@ -18,6 +22,11 @@ class Score extends GameObject{
     }
 
     update() {
-        this.text.text = "SCORE : " + Score.point.toFixed();
+        this.text.text = "SCORE : " + this.point.toFixed();
+    }
+
+    breakBox(){
+        this.point += 1 + this.combo;
+        this.combo++;
     }
 }
