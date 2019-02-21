@@ -1,3 +1,5 @@
+// Liberapp 2019 Tahiti Katagai
+
 // UnityのGameObjectライクなタスク管理クラス
 //  update()に毎フレームの処理を書く
 //  オブジェクトを破棄するときはdestroy()を呼ぶ

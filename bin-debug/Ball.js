@@ -1,3 +1,5 @@
+// Liberapp 2019 - Tahiti Katagai
+// 跳ねるボール
 var __reflect = (this && this.__reflect) || function (p, c, t) {
     p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
 };
@@ -74,7 +76,10 @@ var Ball = (function (_super) {
             // ダメージ〜破壊
             nearest.applyDamage(1);
         }
-        // 壁で跳ね返り
+        this.boundWall();
+    };
+    // 壁で跳ね返り
+    Ball.prototype.boundWall = function () {
         if (Math.pow((this.shape.x - Util.width * 0.5), 2) > Math.pow((Util.width * 0.5 - this.radius), 2)) {
             this.vx *= -1;
             this.vy += this.radius * 0.05; //やや落下させて無限ループ防止
@@ -86,11 +91,8 @@ var Ball = (function (_super) {
         }
         // 下に落ちたら消える
         if (this.shape.y > Util.height) {
-            Paddle.I.ballCount--;
             this.destroy();
         }
-    };
-    Ball.prototype.reflect = function () {
     };
     Ball.balls = [];
     return Ball;

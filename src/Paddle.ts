@@ -1,3 +1,5 @@
+// Liberapp 2019 - Tahiti Katagai
+// 左右に操作するパドル
 
 class Paddle extends GameObject{
 
@@ -12,11 +14,10 @@ class Paddle extends GameObject{
     padAim:PadAim = null;
     aimDir:number;  // まっすぐ上方向(0,-1)が０度のラジアン
     
-    ballCount:number = 3;
+    ballCount:number = 1;
     rowCount:number = 0;
 
     itemType:ItemType = ItemType.None;
-    itemSpan:number = 0;
     state:()=>void = this.stateWave;
 
     constructor() {
@@ -25,7 +26,7 @@ class Paddle extends GameObject{
         Paddle.I = this;
         this.sizeW = PADDLE_SIZE_PER_WIDTH * Util.width;
         this.sizeH = this.sizeW * Paddle.sizeRateH;
-        this.setShape(Util.width *0.5, Util.height *0.9 );
+        this.setShape(Util.width *0.5, Util.height *0.85 );
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => this.touchBegin(e), this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, (e: egret.TouchEvent) => this.touchMove(e), this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => this.touchEnd(e), this);
@@ -43,7 +44,11 @@ class Paddle extends GameObject{
             GameObject.display.removeChild(this.shape);
         this.shape = new egret.Shape();
         this.shape.graphics.beginFill(0x703000);
-        this.shape.graphics.drawRect(-0.5*this.sizeW, -0.5*this.sizeH, this.sizeW, this.sizeH);
+        const w = this.sizeW + this.sizeH * 0.5;
+        const h = this.sizeH;
+        this.shape.graphics.drawRect(-0.5*(w-h), -0.5*h, w-h, h);
+        this.shape.graphics.drawCircle(-0.5*(w-h), 0, 0.5*h);
+        this.shape.graphics.drawCircle(+0.5*(w-h), 0, 0.5*h);
         this.shape.graphics.endFill();
         GameObject.display.addChild(this.shape);
         this.shape.x = x;
@@ -62,7 +67,7 @@ class Paddle extends GameObject{
         // scroll down all remaining boxes
         Box.boxes.forEach( box => {
             box.shape.y += BOX_SIZE_PER_WIDTH * Util.width * Box.sizeRateH;
-            if( box.shape.y > this.shape.y )
+            if( box.shape.y >= this.shape.y - this.sizeH * 0.5 )
                 isGameOver = true;
         });
 
@@ -71,9 +76,9 @@ class Paddle extends GameObject{
         let sizeW = BOX_SIZE_PER_WIDTH * Util.width;
         let sizeH = sizeW * Box.sizeRateH;
         for( let i=1 ; i<BOXES_IN_WIDTH ; i++ ){
-            let hp = Util.randomInt( -1, Util.clamp(this.rowCount+1, 1, Box.maxHp) );
+            let hp = Util.randomInt( -1, this.rowCount );
             if( hp > 0 )
-                new Box( sizeW * i, sizeH * 1, hp );
+                new Box( sizeW * i, sizeH * 1, Util.clamp( hp, 1, Box.maxHp ) );
         }
         
         // Is game over?
@@ -98,10 +103,30 @@ class Paddle extends GameObject{
         let x = this.shape.x;
         let y = this.shape.y - this.sizeH*0.5 - (BALL_SIZE_PER_WIDTH*Util.width*0.5);
         let baseSpeed = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * 0.5;
-        for( let i=0 ; i<this.ballCount ; i++ ) {
+
+        // ボール一発目はアイテム効果
+        switch( this.itemType ){
+            default: console.error("unknown item type");
+            case ItemType.None:
+            new Ball( x, y, vx * baseSpeed, vy * baseSpeed );
+            break;
+            case ItemType.Big:
+            new BigBall( x, y, vx * baseSpeed, vy * baseSpeed );
+            break;
+            case ItemType.Way5:
+            for( let i=-3 ; i<=3 ; i++ ){
+                let angle = dir + i * Math.PI * (1/10);
+                new Ball( x, y, -Math.sin( angle ) * baseSpeed, -Math.cos( angle ) * baseSpeed );
+            }
+            break;
+        }
+        
+        for( let i=1 ; i<this.ballCount ; i++ ) {
             let speed = baseSpeed * ( 1 + i * 0.2 );
             new Ball( x, y, vx * speed, vy * speed );
         }
+        this.itemType = ItemType.None;
+        Paddle.I.ballCount = 0;
     }
 
     stateCatch(){
@@ -114,6 +139,7 @@ class Paddle extends GameObject{
                 let yr = ball.radius + this.sizeH*0.5;
 
                 if( dx*dx < xr*xr && dy*dy < yr*yr ){
+                    Paddle.I.ballCount++;
                     ball.destroy();
                 }
             }
@@ -148,8 +174,15 @@ class Paddle extends GameObject{
 
     pickItem(item:ItemType){
         switch( item ){
+            default: console.error("unknown type of item");
             case ItemType.Ball:
             this.ballCount++;
+            break;
+            case ItemType.Big:
+            this.itemType = item;
+            break;
+            case ItemType.Way5:
+            this.itemType = item;
             break;
         }
     }

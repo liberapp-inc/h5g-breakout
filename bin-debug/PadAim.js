@@ -1,3 +1,5 @@
+// Liberapp 2019 - Tahiti Katagai
+// 狙って撃つ方向表示
 var __reflect = (this && this.__reflect) || function (p, c, t) {
     p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
 };
@@ -42,7 +44,7 @@ var PadAim = (function (_super) {
             vx *= -1;
         }
         this.dir = Util.clamp(Math.atan2(-vx, -vy), -Math.PI * 0.45, +Math.PI * 0.45);
-        console.log(this.dir);
+        //console.log( this.dir );
         vx = -Math.sin(this.dir);
         vy = -Math.cos(this.dir);
         this.shape = new egret.Shape();

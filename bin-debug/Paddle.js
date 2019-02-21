@@ -1,3 +1,5 @@
+// Liberapp 2019 - Tahiti Katagai
+// 左右に操作するパドル
 var __reflect = (this && this.__reflect) || function (p, c, t) {
     p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
 };
@@ -15,15 +17,14 @@ var Paddle = (function (_super) {
         _this.touchOffsetX = 0;
         _this.touch = false;
         _this.padAim = null;
-        _this.ballCount = 3;
+        _this.ballCount = 1;
         _this.rowCount = 0;
         _this.itemType = ItemType.None;
-        _this.itemSpan = 0;
         _this.state = _this.stateWave;
         Paddle.I = _this;
         _this.sizeW = PADDLE_SIZE_PER_WIDTH * Util.width;
         _this.sizeH = _this.sizeW * Paddle.sizeRateH;
-        _this.setShape(Util.width * 0.5, Util.height * 0.9);
+        _this.setShape(Util.width * 0.5, Util.height * 0.85);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, function (e) { return _this.touchBegin(e); }, _this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, function (e) { return _this.touchMove(e); }, _this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_END, function (e) { return _this.touchEnd(e); }, _this);
@@ -41,7 +42,11 @@ var Paddle = (function (_super) {
             GameObject.display.removeChild(this.shape);
         this.shape = new egret.Shape();
         this.shape.graphics.beginFill(0x703000);
-        this.shape.graphics.drawRect(-0.5 * this.sizeW, -0.5 * this.sizeH, this.sizeW, this.sizeH);
+        var w = this.sizeW + this.sizeH * 0.5;
+        var h = this.sizeH;
+        this.shape.graphics.drawRect(-0.5 * (w - h), -0.5 * h, w - h, h);
+        this.shape.graphics.drawCircle(-0.5 * (w - h), 0, 0.5 * h);
+        this.shape.graphics.drawCircle(+0.5 * (w - h), 0, 0.5 * h);
         this.shape.graphics.endFill();
         GameObject.display.addChild(this.shape);
         this.shape.x = x;
@@ -57,7 +62,7 @@ var Paddle = (function (_super) {
         // scroll down all remaining boxes
         Box.boxes.forEach(function (box) {
             box.shape.y += BOX_SIZE_PER_WIDTH * Util.width * Box.sizeRateH;
-            if (box.shape.y > _this.shape.y)
+            if (box.shape.y >= _this.shape.y - _this.sizeH * 0.5)
                 isGameOver = true;
         });
         // Generate a new box row
@@ -65,9 +70,9 @@ var Paddle = (function (_super) {
         var sizeW = BOX_SIZE_PER_WIDTH * Util.width;
         var sizeH = sizeW * Box.sizeRateH;
         for (var i = 1; i < BOXES_IN_WIDTH; i++) {
-            var hp = Util.randomInt(-1, Util.clamp(this.rowCount + 1, 1, Box.maxHp));
+            var hp = Util.randomInt(-1, this.rowCount);
             if (hp > 0)
-                new Box(sizeW * i, sizeH * 1, hp);
+                new Box(sizeW * i, sizeH * 1, Util.clamp(hp, 1, Box.maxHp));
         }
         // Is game over?
         if (isGameOver || this.ballCount == 0) {
@@ -90,10 +95,28 @@ var Paddle = (function (_super) {
         var x = this.shape.x;
         var y = this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5);
         var baseSpeed = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * 0.5;
-        for (var i = 0; i < this.ballCount; i++) {
+        // ボール一発目はアイテム効果
+        switch (this.itemType) {
+            default: console.error("unknown item type");
+            case ItemType.None:
+                new Ball(x, y, vx * baseSpeed, vy * baseSpeed);
+                break;
+            case ItemType.Big:
+                new BigBall(x, y, vx * baseSpeed, vy * baseSpeed);
+                break;
+            case ItemType.Way5:
+                for (var i = -3; i <= 3; i++) {
+                    var angle = dir + i * Math.PI * (1 / 10);
+                    new Ball(x, y, -Math.sin(angle) * baseSpeed, -Math.cos(angle) * baseSpeed);
+                }
+                break;
+        }
+        for (var i = 1; i < this.ballCount; i++) {
             var speed = baseSpeed * (1 + i * 0.2);
             new Ball(x, y, vx * speed, vy * speed);
         }
+        this.itemType = ItemType.None;
+        Paddle.I.ballCount = 0;
     };
     Paddle.prototype.stateCatch = function () {
         var _this = this;
@@ -105,6 +128,7 @@ var Paddle = (function (_super) {
                 var xr = ball.radius + _this.sizeW * 0.5;
                 var yr = ball.radius + _this.sizeH * 0.5;
                 if (dx * dx < xr * xr && dy * dy < yr * yr) {
+                    Paddle.I.ballCount++;
                     ball.destroy();
                 }
             }
@@ -133,8 +157,15 @@ var Paddle = (function (_super) {
     };
     Paddle.prototype.pickItem = function (item) {
         switch (item) {
+            default: console.error("unknown type of item");
             case ItemType.Ball:
                 this.ballCount++;
+                break;
+            case ItemType.Big:
+                this.itemType = item;
+                break;
+            case ItemType.Way5:
+                this.itemType = item;
                 break;
         }
     };

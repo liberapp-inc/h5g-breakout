@@ -1,3 +1,5 @@
+// Liberapp 2019 - Tahiti Katagai
+// ゲーム全般
 
 const BOXES_IN_WIDTH = 6;
 const BOX_SIZE_PER_WIDTH = 1/BOXES_IN_WIDTH;

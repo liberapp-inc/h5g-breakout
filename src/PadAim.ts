@@ -1,3 +1,5 @@
+// Liberapp 2019 - Tahiti Katagai
+// 狙って撃つ方向表示
 
 class PadAim extends GameObject{
 
@@ -40,7 +42,7 @@ class PadAim extends GameObject{
             vx *= -1;
         }
         this.dir = Util.clamp( Math.atan2( -vx, -vy ), -Math.PI*0.45, +Math.PI*0.45 );
-        console.log( this.dir );
+        //console.log( this.dir );
         vx = -Math.sin( this.dir );
         vy = -Math.cos( this.dir );
 

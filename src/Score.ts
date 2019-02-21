@@ -1,3 +1,4 @@
+// Liberapp 2019 - Tahiti Katagai
 
 class Score extends GameObject{
 

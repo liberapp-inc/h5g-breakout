@@ -1,3 +1,5 @@
+// Liberapp 2019 - Tahiti Katagai
+// 壊すボックス　上からだんだん降りてくる
 var __reflect = (this && this.__reflect) || function (p, c, t) {
     p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
 };
@@ -37,11 +39,9 @@ var Box = (function (_super) {
     };
     Box.getColor = function (hp) {
         var rate = Util.clamp((hp - 1) / (Box.maxHp - 1), 0, 1);
-        //return Util.color( 0.9 * rate, 0, 0.2 * rate );
         return Util.colorLerp(0xf0d000, 0x800000, rate);
     };
-    Box.prototype.update = function () {
-    };
+    Box.prototype.update = function () { };
     Box.prototype.applyDamage = function (point) {
         if (point === void 0) { point = 1; }
         this.hp -= point;
@@ -49,16 +49,17 @@ var Box = (function (_super) {
             this.setShape(this.shape.x, this.shape.y);
         }
         else {
-            if (Util.randomInt(0, 3) == 0) {
-                new Item(this.shape.x, this.shape.y, ItemType.Ball);
+            if (Util.randomInt(0, 4) == 0) {
+                var itemTable = [ItemType.Ball, ItemType.Ball, ItemType.Ball, ItemType.Ball, ItemType.Big, ItemType.Way5];
+                new Item(this.shape.x, this.shape.y, itemTable[Util.randomInt(0, itemTable.length - 1)]);
             }
             Score.I.breakBox();
             this.destroy();
         }
     };
     Box.boxes = [];
-    Box.sizeRateH = 0.75; // (1/2);
-    Box.maxHp = 10;
+    Box.sizeRateH = 0.75;
+    Box.maxHp = 15;
     return Box;
 }(GameObject));
 __reflect(Box.prototype, "Box");

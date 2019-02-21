@@ -1,12 +1,12 @@
-
+// Liberapp 2019 Tahiti Katagai
 // パワーアップアイテム
 
 enum ItemType {
     None,
     Ball,
-    Chain,
-    BigBall,
-    Shot,
+    Big,
+    Way5,
+    Total,
 }
 
 class Item extends GameObject{
@@ -20,12 +20,35 @@ class Item extends GameObject{
         super();
 
         Item.count++;
-        this.radius = Util.width * BALL_SIZE_PER_WIDTH * 0.5 * 0.7;
         this.type = type;
         this.shape = new egret.Shape();
-        this.shape.graphics.beginFill(0xffc000);
-        this.shape.graphics.drawCircle(0, 0, this.radius);
-        this.shape.graphics.endFill();
+        switch( this.type )
+        {
+            case ItemType.Ball:
+            this.radius = Util.width * BALL_SIZE_PER_WIDTH * 0.5 * 0.7;
+            this.shape.graphics.beginFill(0xffc000);
+            this.shape.graphics.drawCircle(0, 0, this.radius);
+            this.shape.graphics.endFill();
+            break;
+            case ItemType.Big:
+            this.radius = Util.width * BALL_SIZE_PER_WIDTH * 0.5 * 2;
+            this.shape.graphics.lineStyle(8, 0xffc000);
+            // this.shape.graphics.beginFill(0xffc000);
+            this.shape.graphics.drawCircle(0, 0, this.radius );
+            // this.shape.graphics.endFill();
+            break;
+            case ItemType.Way5:
+            const r = Util.width * BALL_SIZE_PER_WIDTH * 0.5;
+            this.radius = r * 2;
+            this.shape.graphics.beginFill(0xffc000);
+            this.shape.graphics.drawCircle(-2.0*r, +0.4*r, 0.5*r);
+            this.shape.graphics.drawCircle(-1.0*r, -0.0*r, 0.5*r);
+            this.shape.graphics.drawCircle(-0.0*r, -0.3*r, 0.5*r);
+            this.shape.graphics.drawCircle(+1.0*r, -0.0*r, 0.5*r);
+            this.shape.graphics.drawCircle(+2.0*r, +0.4*r, 0.5*r);
+            this.shape.graphics.endFill();
+            break;
+        }
         GameObject.display.addChild(this.shape);
         this.shape.x = x;
         this.shape.y = y;

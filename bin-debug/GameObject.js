@@ -1,12 +1,13 @@
+// Liberapp 2019 Tahiti Katagai
+var __reflect = (this && this.__reflect) || function (p, c, t) {
+    p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
+};
 // UnityのGameObjectライクなタスク管理クラス
 //  update()に毎フレームの処理を書く
 //  オブジェクトを破棄するときはdestroy()を呼ぶ
 //  破棄のときに後処理が必要なら、onDestroy()に記述
 //  生成時の初期化はUnityと違い、constructor()を使う（引数を渡せる）
 //  シーンを切り替えたい場合は transitにシーンロード関数を設定（全オブジェクトを破棄してからtransitを実行）
-var __reflect = (this && this.__reflect) || function (p, c, t) {
-    p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
-};
 var GameObject = (function () {
     function GameObject() {
         this.shape = null;

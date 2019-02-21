@@ -1,3 +1,4 @@
+// Liberapp 2019 - Tahiti Katagai
 // ゲームで便利に使えるUtilityクラス
 
 class Util{
