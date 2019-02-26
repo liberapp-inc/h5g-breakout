@@ -3,7 +3,7 @@
 
 class BigBall extends Ball{
 
-    hp:number = 40;
+    hp:number = 50;
 
     constructor( x:number, y:number, vx:number, vy:number ) {
         super( x, y, vx, vy );
@@ -33,7 +33,7 @@ class BigBall extends Ball{
             if( dx2 < xr**2 && dy2 < yr**2 ){
                 box.applyDamage( 1 );
                 if( --this.hp <= 0 ){
-                    new Ball( this.shape.x, this.shape.y, this.vx, this.vy );
+                    new Ball( this.shape.x, this.shape.y, this.vx*1.5, this.vy*1.5 );
                     this.destroy();
                     return;
                 }

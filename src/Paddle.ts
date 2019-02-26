@@ -14,7 +14,7 @@ class Paddle extends GameObject{
     padAim:PadAim = null;
     aimDir:number;  // まっすぐ上方向(0,-1)が０度のラジアン
     
-    ballCount:number = 1;
+    ballCount:number = 2;
     rowCount:number = 0;
 
     itemType:ItemType = ItemType.None;
@@ -26,7 +26,10 @@ class Paddle extends GameObject{
         Paddle.I = this;
         this.sizeW = PADDLE_SIZE_PER_WIDTH * Util.width;
         this.sizeH = this.sizeW * Paddle.sizeRateH;
-        this.setShape(Util.width *0.5, Util.height *0.85 );
+        this.setShape(Util.width *0.5, Util.height *0.8 );
+        for( let i=0 ; i<2 ; i++ )
+            this.generateNewBoxRow();
+
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => this.touchBegin(e), this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, (e: egret.TouchEvent) => this.touchMove(e), this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_END, (e: egret.TouchEvent) => this.touchEnd(e), this);
@@ -61,8 +64,18 @@ class Paddle extends GameObject{
 
     stateWave(){
         let isGameOver = false;
-
         Score.I.combo = 0;
+
+        // generate boxes
+        if( this.generateNewBoxRow() || this.ballCount == 0 ){
+            new GameOver();
+        }else{
+            this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH*0.5 - (BALL_SIZE_PER_WIDTH*Util.width*0.5));
+        }
+        this.state = this.stateAiming;
+    }
+    generateNewBoxRow() : boolean {
+        let isGameOver = false;
 
         // scroll down all remaining boxes
         Box.boxes.forEach( box => {
@@ -76,19 +89,12 @@ class Paddle extends GameObject{
         let sizeW = BOX_SIZE_PER_WIDTH * Util.width;
         let sizeH = sizeW * Box.sizeRateH;
         for( let i=1 ; i<BOXES_IN_WIDTH ; i++ ){
-            let hp = Util.randomInt( -1, this.rowCount );
-            if( hp > 0 )
-                new Box( sizeW * i, sizeH * 1, Util.clamp( hp, 1, Box.maxHp ) );
+            if( Math.random() <= Math.min( this.rowCount / 20 + 0.2, 0.82 ) ){
+                let maxHp = Math.min( this.rowCount, Box.maxHp );
+                new Box( sizeW * i, sizeH * 1, Util.randomInt( maxHp * 0.33, maxHp ) );
+            }
         }
-        
-        // Is game over?
-        if( isGameOver || this.ballCount == 0 ){
-            this.state = this.stateAiming;
-            new GameOver();
-        }else{
-            this.state = this.stateAiming;
-            this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH*0.5 - (BALL_SIZE_PER_WIDTH*Util.width*0.5));
-        }
+        return isGameOver;
     }
 
     stateAiming(){
@@ -173,10 +179,10 @@ class Paddle extends GameObject{
 
 
     pickItem(item:ItemType){
+        this.ballCount++;
         switch( item ){
             default: console.error("unknown type of item");
             case ItemType.Ball:
-            this.ballCount++;
             break;
             case ItemType.Big:
             this.itemType = item;

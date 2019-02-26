@@ -17,14 +17,16 @@ var Paddle = (function (_super) {
         _this.touchOffsetX = 0;
         _this.touch = false;
         _this.padAim = null;
-        _this.ballCount = 1;
+        _this.ballCount = 2;
         _this.rowCount = 0;
         _this.itemType = ItemType.None;
         _this.state = _this.stateWave;
         Paddle.I = _this;
         _this.sizeW = PADDLE_SIZE_PER_WIDTH * Util.width;
         _this.sizeH = _this.sizeW * Paddle.sizeRateH;
-        _this.setShape(Util.width * 0.5, Util.height * 0.85);
+        _this.setShape(Util.width * 0.5, Util.height * 0.8);
+        for (var i = 0; i < 2; i++)
+            _this.generateNewBoxRow();
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, function (e) { return _this.touchBegin(e); }, _this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, function (e) { return _this.touchMove(e); }, _this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_END, function (e) { return _this.touchEnd(e); }, _this);
@@ -56,9 +58,20 @@ var Paddle = (function (_super) {
         this.state();
     };
     Paddle.prototype.stateWave = function () {
-        var _this = this;
         var isGameOver = false;
         Score.I.combo = 0;
+        // generate boxes
+        if (this.generateNewBoxRow() || this.ballCount == 0) {
+            new GameOver();
+        }
+        else {
+            this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5));
+        }
+        this.state = this.stateAiming;
+    };
+    Paddle.prototype.generateNewBoxRow = function () {
+        var _this = this;
+        var isGameOver = false;
         // scroll down all remaining boxes
         Box.boxes.forEach(function (box) {
             box.shape.y += BOX_SIZE_PER_WIDTH * Util.width * Box.sizeRateH;
@@ -70,19 +83,12 @@ var Paddle = (function (_super) {
         var sizeW = BOX_SIZE_PER_WIDTH * Util.width;
         var sizeH = sizeW * Box.sizeRateH;
         for (var i = 1; i < BOXES_IN_WIDTH; i++) {
-            var hp = Util.randomInt(-1, this.rowCount);
-            if (hp > 0)
-                new Box(sizeW * i, sizeH * 1, Util.clamp(hp, 1, Box.maxHp));
+            if (Math.random() <= Math.min(this.rowCount / 20 + 0.2, 0.8)) {
+                var maxHp = Math.min(this.rowCount, Box.maxHp);
+                new Box(sizeW * i, sizeH * 1, Util.randomInt(maxHp * (1 / 3), maxHp));
+            }
         }
-        // Is game over?
-        if (isGameOver || this.ballCount == 0) {
-            this.state = this.stateAiming;
-            new GameOver();
-        }
-        else {
-            this.state = this.stateAiming;
-            this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5));
-        }
+        return isGameOver;
     };
     Paddle.prototype.stateAiming = function () {
     };
@@ -156,10 +162,10 @@ var Paddle = (function (_super) {
         this.touch = false;
     };
     Paddle.prototype.pickItem = function (item) {
+        this.ballCount++;
         switch (item) {
             default: console.error("unknown type of item");
             case ItemType.Ball:
-                this.ballCount++;
                 break;
             case ItemType.Big:
                 this.itemType = item;

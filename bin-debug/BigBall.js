@@ -14,7 +14,7 @@ var BigBall = (function (_super) {
     __extends(BigBall, _super);
     function BigBall(x, y, vx, vy) {
         var _this = _super.call(this, x, y, vx, vy) || this;
-        _this.hp = 40;
+        _this.hp = 50;
         _this.radius = BALL_SIZE_PER_WIDTH * Util.width * 0.5 * 2;
         _this.setShape(x, y, _this.radius);
         return _this;
@@ -38,7 +38,7 @@ var BigBall = (function (_super) {
             if (dx2 < Math.pow(xr, 2) && dy2 < Math.pow(yr, 2)) {
                 box.applyDamage(1);
                 if (--_this.hp <= 0) {
-                    new Ball(_this.shape.x, _this.shape.y, _this.vx, _this.vy);
+                    new Ball(_this.shape.x, _this.shape.y, _this.vx * 1.5, _this.vy * 1.5);
                     _this.destroy();
                     return;
                 }
