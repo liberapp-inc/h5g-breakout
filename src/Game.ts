@@ -12,5 +12,6 @@ class Game {
         new Background();
         new Paddle();
         new Score();
+        new StartMessage();
     }
 }

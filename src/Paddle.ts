@@ -18,7 +18,7 @@ class Paddle extends GameObject{
     rowCount:number = 0;
 
     itemType:ItemType = ItemType.None;
-    state:()=>void = this.stateWave;
+    state:()=>void = this.stateNone;
 
     constructor() {
         super();
@@ -27,7 +27,7 @@ class Paddle extends GameObject{
         this.sizeW = PADDLE_SIZE_PER_WIDTH * Util.width;
         this.sizeH = this.sizeW * Paddle.sizeRateH;
         this.setShape(Util.width *0.5, Util.height *0.8 );
-        for( let i=0 ; i<2 ; i++ )
+        for( let i=0 ; i<3 ; i++ )
             this.generateNewBoxRow();
 
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, (e: egret.TouchEvent) => this.touchBegin(e), this);
@@ -62,6 +62,8 @@ class Paddle extends GameObject{
         this.state();
     }
 
+    stateNone(){}
+
     stateWave(){
         let isGameOver = false;
         Score.I.combo = 0;
@@ -69,10 +71,10 @@ class Paddle extends GameObject{
         // generate boxes
         if( this.generateNewBoxRow() || this.ballCount == 0 ){
             new GameOver();
+            this.state = this.stateNone;
         }else{
-            this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH*0.5 - (BALL_SIZE_PER_WIDTH*Util.width*0.5));
+            this.setStateAiming();
         }
-        this.state = this.stateAiming;
     }
     generateNewBoxRow() : boolean {
         let isGameOver = false;
@@ -97,6 +99,10 @@ class Paddle extends GameObject{
         return isGameOver;
     }
 
+    setStateAiming(){
+        this.state = this.stateAiming;
+        this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH*0.5 - (BALL_SIZE_PER_WIDTH*Util.width*0.5));
+    }
     stateAiming(){
     }
     shoot( dir:number ){

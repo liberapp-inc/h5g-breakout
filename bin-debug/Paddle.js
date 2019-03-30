@@ -20,12 +20,12 @@ var Paddle = (function (_super) {
         _this.ballCount = 2;
         _this.rowCount = 0;
         _this.itemType = ItemType.None;
-        _this.state = _this.stateWave;
+        _this.state = _this.stateNone;
         Paddle.I = _this;
         _this.sizeW = PADDLE_SIZE_PER_WIDTH * Util.width;
         _this.sizeH = _this.sizeW * Paddle.sizeRateH;
         _this.setShape(Util.width * 0.5, Util.height * 0.8);
-        for (var i = 0; i < 2; i++)
+        for (var i = 0; i < 3; i++)
             _this.generateNewBoxRow();
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN, function (e) { return _this.touchBegin(e); }, _this);
         GameObject.display.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE, function (e) { return _this.touchMove(e); }, _this);
@@ -57,17 +57,18 @@ var Paddle = (function (_super) {
     Paddle.prototype.update = function () {
         this.state();
     };
+    Paddle.prototype.stateNone = function () { };
     Paddle.prototype.stateWave = function () {
         var isGameOver = false;
         Score.I.combo = 0;
         // generate boxes
         if (this.generateNewBoxRow() || this.ballCount == 0) {
             new GameOver();
+            this.state = this.stateNone;
         }
         else {
-            this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5));
+            this.setStateAiming();
         }
-        this.state = this.stateAiming;
     };
     Paddle.prototype.generateNewBoxRow = function () {
         var _this = this;
@@ -83,12 +84,16 @@ var Paddle = (function (_super) {
         var sizeW = BOX_SIZE_PER_WIDTH * Util.width;
         var sizeH = sizeW * Box.sizeRateH;
         for (var i = 1; i < BOXES_IN_WIDTH; i++) {
-            if (Math.random() <= Math.min(this.rowCount / 20 + 0.2, 0.8)) {
+            if (Math.random() <= Math.min(this.rowCount / 20 + 0.2, 0.82)) {
                 var maxHp = Math.min(this.rowCount, Box.maxHp);
-                new Box(sizeW * i, sizeH * 1, Util.randomInt(maxHp * (1 / 3), maxHp));
+                new Box(sizeW * i, sizeH * 1, Util.randomInt(maxHp * 0.33, maxHp));
             }
         }
         return isGameOver;
+    };
+    Paddle.prototype.setStateAiming = function () {
+        this.state = this.stateAiming;
+        this.padAim = new PadAim(this.shape.x, this.shape.y - this.sizeH * 0.5 - (BALL_SIZE_PER_WIDTH * Util.width * 0.5));
     };
     Paddle.prototype.stateAiming = function () {
     };

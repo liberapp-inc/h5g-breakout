@@ -14,6 +14,7 @@ var Game = (function () {
         new Background();
         new Paddle();
         new Score();
+        new StartMessage();
     };
     return Game;
 }());
